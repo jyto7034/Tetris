@@ -99,7 +99,6 @@ public:
 		this->Weight->x = rvalue.Weight->x;
 		this->Weight->y = rvalue.Weight->y;
 
-
 		if (rvalue.x == -1)
 		{
 			rvalue.x = this->x;
@@ -201,7 +200,7 @@ void Renderer(Block Buffer, int x, int y);
 void ShowBlockData(Block block);
 FuncReturnType Start(Map& Buffer);
 void PrintMapXY(Map map);
-void thrd_InputDirectionFromUser(int &X, int& Y, Map& Back_Buffer, Map& Front_Buffer, std::mutex& m);
+void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex& m);
 Shape* CreateShape();
 FuncReturnType MoveShape(Map& Buffer);
 void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer, int MapX, int MapY);

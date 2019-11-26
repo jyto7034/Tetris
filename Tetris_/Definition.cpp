@@ -1,6 +1,8 @@
 #include "Main.h"
 
 static CConsoleLogger Console;
+static bool Try_Render = false;
+static bool StopMove = false;
 
 #pragma region Tools
 
@@ -75,44 +77,28 @@ void PrintMapXY(Map map) {
 #pragma endregion
 
 
-void thrd_InputDirectionFromUser(int& X, int& Y, Map& Back_Buffer, Map& Front_Buffer, std::mutex& m)
+void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex& m)
 {
 	while (true)
 	{
-		m.lock();
-		if (Y < 20) {
+		if (Back_Buffer.ActiveShape->y < 20) 
+		{
 			int key = getch();
 			if (key == 224) {
 				key = getch();
-				Log("i", key);
-				if (key == 77)
-				{
-					X++;
-				}
-				if (key == 75)
-				{
-					Log("si", "X :", X);
-					X--;
-				}
-				if (key == 80)
-				{
-					Log("si", "Y :", Y);
-					Y++;
-				}
-				if (key == 72)
-				{
-					Log("si", "Y :", Y);
-					Y--;
-				}
-
+				m.lock();
+				if (key == 77 && StopMove == false)
+					Back_Buffer.ActiveShape->x++;
+				if (key == 75 && StopMove == false)
+					Back_Buffer.ActiveShape->x--;
+				if (key == 80 && StopMove == false)
+					Back_Buffer.ActiveShape->y++;
+				if (key == 72 && StopMove == false)
+					Back_Buffer.ActiveShape->y--;
+				m.unlock();
+				Try_Render = true;
 			}
 		}
-		Back_Buffer.ActiveShape->x += X;
-		Back_Buffer.ActiveShape->y += Y;
-		X = Y = 0;
-		CheckBufferAndRender(Back_Buffer, Front_Buffer, Back_Buffer.MapX, Back_Buffer.MapY);
-		m.unlock();
-		Sleep(500);
 	}
 }
 
@@ -269,12 +255,10 @@ FuncReturnType MoveShape(Map& Buffer) {
 	}
 	else
 	{
-		shape->y--;
-		Buffer[shape->y][shape->x] = blank;
-		Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x] = blank;
-		Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x] = blank;
-		Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x] = blank;
-		shape->y++;
+		for (int y = 0; y < Buffer.MapY; y++)
+			for (int x = 0; x < Buffer.MapX; x++)
+				if(Buffer[y][x].blocktype == BlockType::BLOCK)
+					Buffer[y][x] = blank;
 	}
 
 
@@ -291,6 +275,7 @@ FuncReturnType MoveShape(Map& Buffer) {
 		Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x].blocktype == BlockType::GROUND)
 	{
 		shape->y--;
+		StopMove = true;
 		(Buffer[shape->y][shape->x] = block[0]).blocktype = BlockType::INACTBLOCK;
 		(Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x] = block[1]).blocktype = BlockType::INACTBLOCK;
 		(Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x] = block[2]).blocktype = BlockType::INACTBLOCK;
@@ -311,7 +296,7 @@ FuncReturnType MoveShape(Map& Buffer) {
 
 FuncReturnType Start(Map& Buffer) {
 	std::mutex m;
-	Console.Create("Log");
+	Console.Create("Log"); 
 	Map Front_Buffer;
 	Map Back_Buffer;
 
@@ -320,15 +305,10 @@ FuncReturnType Start(Map& Buffer) {
 	FuncReturnType result = FuncReturnType::eNULL;
 
 	Back_Buffer = Buffer;
-	int _x = 0;
-	int _y = 0;
 	std::thread Thrd_UserInput( 
-		thrd_InputDirectionFromUser, std::ref(_x), std::ref(_y),
-		std::ref(Back_Buffer), std::ref(Front_Buffer), std::ref(m)
+		thrd_InputDirectionFromUser, std::ref(Back_Buffer), std::ref(Front_Buffer), std::ref(m)
 	);
 	Thrd_UserInput.detach();
-
-	int size = Buffer.MapX * Buffer.MapY;
 
 	while (true)
 	{
@@ -337,12 +317,15 @@ FuncReturnType Start(Map& Buffer) {
 			Shapeinstance = CreateShape();
 		}
 		Back_Buffer.SetActiveShape(Shapeinstance);
-		Back_Buffer.ActiveShape->x += _x;
-		Back_Buffer.ActiveShape->y += _y;
-		m.lock();
-		_x = _y = 0;
-		m.unlock();
 		result = MoveShape(Back_Buffer);
+		CheckBufferAndRender(Back_Buffer, Front_Buffer, Back_Buffer.MapX, Back_Buffer.MapY);
+		for (int i = 0; i < 100; i++)
+			if (Try_Render) {
+				Try_Render = false;
+				break;
+			}
+			else
+				Sleep(5);
 	}
 	return FuncReturnType::BLOCKED_BY_ENDLINE;
 }
@@ -373,6 +356,7 @@ void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer, int MapX, int Map
 			}
 		}
 	}
+	Try_Render = FALSE;
 	gotoxy(0, 0);
 }
 
