@@ -94,6 +94,8 @@ public:
 	}
 
 	Block& operator=(Block rvalue) {
+		Log("sisisisi", "\ntype :", rvalue.blocktype, "\ncolor :", rvalue.Color, "\nx :", rvalue.x, "\ny :", rvalue.y);
+		Log("sisi", "Weight->x :", rvalue.Weight->x, "\nWeight->y :", rvalue.Weight->y);
 		this->blocktype = rvalue.blocktype;
 		this->Color = rvalue.Color;
 		this->Weight->x = rvalue.Weight->x;
@@ -116,13 +118,13 @@ public:
 
 class Shape {
 public:
-	Block* ElementBlocks;
+	Block** ElementBlocks;
 	ShapeType mShapeType;
 	int BlockCnt;
 	int x, y;
 	Shape() : ElementBlocks(NULL), mShapeType(ShapeType::eNULL), BlockCnt(-1), x(-1), y(-1) {}
-	Shape(Block* Blocks, ShapeType _mShapeType) {
-		assert(Blocks != NULL, "Blocks is NULL");
+	Shape(Block** Blocks, ShapeType _mShapeType) {
+		assert(*Blocks != NULL, "Blocks is NULL");
 		BlockCnt = 4;
 		ElementBlocks = Blocks;
 		x = y = 0;
@@ -130,7 +132,7 @@ public:
 	}
 
 	Block& operator[](int index) {
-		return ElementBlocks[index];
+		return *ElementBlocks[index];
 	}
 };
 
@@ -203,4 +205,6 @@ void PrintMapXY(Map map);
 void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex& m);
 Shape* CreateShape();
 FuncReturnType MoveShape(Map& Buffer);
+FuncReturnType CheckCrash(Map& Buffer, int ShapeX, int ShapeY, Block* block);
+void SetWeight(Block** block, int RotaionIndex, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer, int MapX, int MapY);

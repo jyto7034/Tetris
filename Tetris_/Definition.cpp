@@ -2,7 +2,7 @@
 
 static CConsoleLogger Console;
 static bool Try_Render = false;
-static bool StopMove = false;
+static int RotationCnt = 0;
 
 #pragma region Tools
 
@@ -81,20 +81,39 @@ void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex
 {
 	while (true)
 	{
-		if (Back_Buffer.ActiveShape->y < 20) 
+		if (Back_Buffer.ActiveShape->y < Back_Buffer.MapY)
 		{
 			int key = getch();
-			if (key == 224) {
+			if (key == 224)
+			{
 				key = getch();
 				m.lock();
-				if (key == 77 && StopMove == false)
+				if (key == 77)			// RIGHT
+				{
 					Back_Buffer.ActiveShape->x++;
-				if (key == 75 && StopMove == false)
+					if(CheckCrash(Back_Buffer, Back_Buffer.ActiveShape->x, Back_Buffer.ActiveShape->y, Back_Buffer.ActiveShape->ElementBlocks[RotationCnt]) == FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK)
+						Back_Buffer.ActiveShape->x--;
+				}
+				else if (key == 75)	// LEFT
+				{
 					Back_Buffer.ActiveShape->x--;
-				if (key == 80 && StopMove == false)
+					if (CheckCrash(Back_Buffer, Back_Buffer.ActiveShape->x, Back_Buffer.ActiveShape->y, Back_Buffer.ActiveShape->ElementBlocks[RotationCnt]) == FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK)
+						Back_Buffer.ActiveShape->x++;
+				}
+				else if (key == 80)	// DOWN
+				{
+
 					Back_Buffer.ActiveShape->y++;
-				if (key == 72 && StopMove == false)
+					if (CheckCrash(Back_Buffer, Back_Buffer.ActiveShape->x, Back_Buffer.ActiveShape->y, Back_Buffer.ActiveShape->ElementBlocks[RotationCnt]) == FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK)
+						Back_Buffer.ActiveShape->y--;
+				}
+				else if (key == 72)	// UP
+				{
+
 					Back_Buffer.ActiveShape->y--;
+					if (CheckCrash(Back_Buffer, Back_Buffer.ActiveShape->x, Back_Buffer.ActiveShape->y, Back_Buffer.ActiveShape->ElementBlocks[RotationCnt]) == FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK)
+						Back_Buffer.ActiveShape->y++;
+				}
 				m.unlock();
 				Try_Render = true;
 			}
@@ -103,142 +122,124 @@ void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex
 }
 
 
+FuncReturnType CheckCrash(Map& Buffer, int ShapeX, int ShapeY, Block* block)
+{
+	if (Buffer[ShapeY + block[0].Weight->y][ShapeX + block[0].Weight->x].blocktype == BlockType::INACTBLOCK ||
+		Buffer[ShapeY + block[0].Weight->y][ShapeX + block[0].Weight->x].blocktype == BlockType::GROUND ||
+		Buffer[ShapeY + block[0].Weight->y][ShapeX + block[0].Weight->x].blocktype == BlockType::WALL ||
+
+		Buffer[ShapeY + block[1].Weight->y][ShapeX + block[1].Weight->x].blocktype == BlockType::INACTBLOCK ||
+		Buffer[ShapeY + block[1].Weight->y][ShapeX + block[1].Weight->x].blocktype == BlockType::GROUND ||
+		Buffer[ShapeY + block[1].Weight->y][ShapeX + block[1].Weight->x].blocktype == BlockType::WALL ||
+
+		Buffer[ShapeY + block[2].Weight->y][ShapeX + block[2].Weight->x].blocktype == BlockType::INACTBLOCK ||
+		Buffer[ShapeY + block[2].Weight->y][ShapeX + block[2].Weight->x].blocktype == BlockType::GROUND ||
+		Buffer[ShapeY + block[2].Weight->y][ShapeX + block[2].Weight->x].blocktype == BlockType::WALL ||
+
+		Buffer[ShapeY + block[3].Weight->y][ShapeX + block[3].Weight->x].blocktype == BlockType::INACTBLOCK ||
+		Buffer[ShapeY + block[3].Weight->y][ShapeX + block[3].Weight->x].blocktype == BlockType::GROUND||
+		Buffer[ShapeY + block[3].Weight->y][ShapeX + block[3].Weight->x].blocktype == BlockType::WALL)
+	{
+		return FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK;
+	}
+}
+
+
+void SetWeight(Block** block, int RotationIndex, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+	block[RotationIndex][0].Weight->x = x1;
+	block[RotationIndex][0].Weight->y = y1;
+	block[RotationIndex][1].Weight->x = x2;
+	block[RotationIndex][1].Weight->y = y2;
+	block[RotationIndex][2].Weight->x = x3;
+	block[RotationIndex][2].Weight->y = y3;
+	block[RotationIndex][3].Weight->x = x4;
+	block[RotationIndex][3].Weight->y = y4;
+}
+
+
 Shape* CreateShape() {
-	Block* block = new Block[4];
+	Block** block = new Block * [4];
+	for (int k = 0; k < 4; k++)
+		block[k] = new Block[4];
 	ShapeType type;
 	int BlockCnt = 4;
 	int r = rand() % 7;
 	for (int i = 0; i < 4; i++) {
-		switch (r)
+		for (int j = 0; j < 4; j++)
 		{
-		case 0:      //Line
-			//Log("s", "Line");
-			block[i].Color = LIGHTBLUE;
-			type = ShapeType::eLine;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = 0;
-				block[2].Weight->y = 2;
-
-				block[3].Weight->x = 0;
-				block[3].Weight->y = 3;
+			switch (r)
+			{
+			case 0:      //Line
+				//Log("s", "Line");
+				block[i][j].Color = LIGHTBLUE;
+				type = ShapeType::eLine;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, 1, 0, 2, 0, 3);
+					SetWeight(block, 1, 0, 0, 1, 0, 2, 0, 3, 0);
+				}
+				break;
+			case 1:      //RStick
+				//Log("s", "RStick");
+				block[i][j].Color = LIGHTRED;
+				type = ShapeType::eRStick;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, 1, 1, 1, 2, 1);
+					SetWeight(block, 1, 0, 0, 1, 0, 0, 1, 0, 2);
+					SetWeight(block, 2, 0, 0, 1, 0, 2, 0, 2, 1);
+					SetWeight(block, 3, 0, 0, 0, 1, 0, 1, -1, 2);
+				}
+				break;
+			case 2:      //LStick
+				//Log("s", "LStick");
+				block[i][j].Color = LIGHTGREEN;
+				type = ShapeType::eLStick;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, 1, -1, 1, -2, 1);
+					SetWeight(block, 1, 0, 0, 0, 1, 0, 2, 1, 3);
+					SetWeight(block, 2, 0, 0, 0, 1, 1, 0, 2, 0);
+					SetWeight(block, 3, 0, 0, -1, 0, 0, 1, 0, 2);
+				}
+				break;
+			case 3:      //RTwo
+				//Log("s", "RTwo");
+				block[i][j].Color = LIGHTCYAN;
+				type = ShapeType::eRTwo;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, 1, -1, 1, -2, 1);
+					SetWeight(block, 1, 0, 0, 1, 0, 0, 1, -1, 1);
+				}
+				break;
+			case 4:      //LTwo
+				//Log("s", "LTwo");
+				block[i][j].Color = LIGHTMAGENTA;
+				type = ShapeType::eLTwo;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, 1, 1, 1, 2, 1);
+					SetWeight(block, 1, 0, 0, -1, 0, 0, 1, 1, 1);
+				}
+				break;
+			case 5:      //Middle
+				//Log("s", "Middle");
+				block[i][j].Color = LIGHTGRAY;
+				type = ShapeType::eMiddle;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 0, -1, -1, 0, 1, 0);
+					SetWeight(block, 1, 0, 0, 1, 0, 0, -1, 0, 1);
+					SetWeight(block, 2, 0, 0, 0, 1, -1, 0, 1, 0);
+					SetWeight(block, 3, 0, 0, -1, 0, -1, 0, 1, 0);
+				}
+				break;
+			case 6:      //Rect
+				//Log("s", "Rect");
+				block[i][j].Color = BROWN;
+				type = ShapeType::eRect;
+				if (i == 0) {
+					SetWeight(block, 0, 0, 0, 1, 0, 1, 1, 0, 1);
+				}
+				break;
 			}
-			break;
-		case 1:      //RStick
-			//Log("s", "RStick");
-			block[i].Color = LIGHTRED;
-			type = ShapeType::eRStick;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = -1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = -2;
-				block[3].Weight->y = 1;
-			}
-			break;
-		case 2:      //LStick
-			//Log("s", "LStick");
-			block[i].Color = LIGHTGREEN;
-			type = ShapeType::eLStick;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = 1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = 2;
-				block[3].Weight->y = 1;
-			}
-			break;
-		case 3:      //RTwo
-			//Log("s", "RTwo");
-			block[i].Color = LIGHTCYAN;
-			type = ShapeType::eRTwo;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = 1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = 1;
-				block[3].Weight->y = 2;
-			}
-			break;
-		case 4:      //LTwo
-			//Log("s", "LTwo");
-			block[i].Color = LIGHTMAGENTA;
-			type = ShapeType::eLTwo;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = -1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = -1;
-				block[3].Weight->y = 2;
-			}
-			break;
-		case 5:      //Middle
-			//Log("s", "Middle");
-			block[i].Color = LIGHTGRAY;
-			type = ShapeType::eMiddle;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 0;
-				block[1].Weight->y = 1;
-
-				block[2].Weight->x = -1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = 1;
-				block[3].Weight->y = 1;
-			}
-			break;
-		case 6:      //Rect
-			//Log("s", "Rect");
-			block[i].Color = BROWN;
-			type = ShapeType::eRect;
-			if (i == 0) {
-				block[0].Weight->x = 0;
-				block[0].Weight->y = 0;
-
-				block[1].Weight->x = 1;
-				block[1].Weight->y = 0;
-
-				block[2].Weight->x = 1;
-				block[2].Weight->y = 1;
-
-				block[3].Weight->x = 0;
-				block[3].Weight->y = 1;
-			}
-			break;
+			block[i][j].blocktype = BlockType::BLOCK;
 		}
-		block[i].blocktype = BlockType::BLOCK;
 	}
 	Shape* shape = new Shape(block, type);
 	return shape;
@@ -246,7 +247,7 @@ Shape* CreateShape() {
 
 
 FuncReturnType MoveShape(Map& Buffer) {
-	Block* block = Buffer.ActiveShape->ElementBlocks;
+	Block** block = Buffer.ActiveShape->ElementBlocks;
 	Shape* shape = Buffer.ActiveShape;
 	Block blank(WHITE, BlockType::BLANK, -1, -1);
 	if (Buffer.ActiveShape->x == 0) {
@@ -257,37 +258,25 @@ FuncReturnType MoveShape(Map& Buffer) {
 	{
 		for (int y = 0; y < Buffer.MapY; y++)
 			for (int x = 0; x < Buffer.MapX; x++)
-				if(Buffer[y][x].blocktype == BlockType::BLOCK)
+				if (Buffer[y][x].blocktype == BlockType::BLOCK)
 					Buffer[y][x] = blank;
 	}
 
-
-	if (Buffer[shape->y + block[0].Weight->y][shape->x + block[0].Weight->x].blocktype == BlockType::INACTBLOCK ||
-		Buffer[shape->y + block[0].Weight->y][shape->x + block[0].Weight->x].blocktype == BlockType::GROUND ||
-
-		Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x].blocktype == BlockType::INACTBLOCK ||
-		Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x].blocktype == BlockType::GROUND ||
-
-		Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x].blocktype == BlockType::INACTBLOCK ||
-		Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x].blocktype == BlockType::GROUND ||
-
-		Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x].blocktype == BlockType::INACTBLOCK ||
-		Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x].blocktype == BlockType::GROUND)
+	if (CheckCrash(Buffer, shape->x, shape->y, block[RotationCnt]) == FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK)
 	{
 		shape->y--;
-		StopMove = true;
-		(Buffer[shape->y][shape->x] = block[0]).blocktype = BlockType::INACTBLOCK;
-		(Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x] = block[1]).blocktype = BlockType::INACTBLOCK;
-		(Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x] = block[2]).blocktype = BlockType::INACTBLOCK;
-		(Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x] = block[3]).blocktype = BlockType::INACTBLOCK;
+		(Buffer[shape->y][shape->x] = block[RotationCnt][0]).blocktype = BlockType::INACTBLOCK;
+		(Buffer[shape->y + block[RotationCnt][1].Weight->y][shape->x + block[RotationCnt][1].Weight->x] = block[RotationCnt][1]).blocktype = BlockType::INACTBLOCK;
+		(Buffer[shape->y + block[RotationCnt][2].Weight->y][shape->x + block[RotationCnt][2].Weight->x] = block[RotationCnt][2]).blocktype = BlockType::INACTBLOCK;
+		(Buffer[shape->y + block[RotationCnt][3].Weight->y][shape->x + block[RotationCnt][3].Weight->x] = block[RotationCnt][3]).blocktype = BlockType::INACTBLOCK;
 		return FuncReturnType::BLOCKED_BY_GROUND_OR_INACTIVEBLOCK;
 	}
 
 	//Buffer[y][x]
-	Buffer[shape->y][shape->x] = block[0];
-	Buffer[shape->y + block[1].Weight->y][shape->x + block[1].Weight->x] = block[1];
-	Buffer[shape->y + block[2].Weight->y][shape->x + block[2].Weight->x] = block[2];
-	Buffer[shape->y + block[3].Weight->y][shape->x + block[3].Weight->x] = block[3];
+	Buffer[shape->y][shape->x] = block[RotationCnt][0];
+	Buffer[shape->y + block[RotationCnt][1].Weight->y][shape->x + block[RotationCnt][1].Weight->x] = block[RotationCnt][1];
+	Buffer[shape->y + block[RotationCnt][2].Weight->y][shape->x + block[RotationCnt][2].Weight->x] = block[RotationCnt][2];
+	Buffer[shape->y + block[RotationCnt][3].Weight->y][shape->x + block[RotationCnt][3].Weight->x] = block[RotationCnt][3];
 	shape->y++;
 
 	return FuncReturnType::CONTINUE;
@@ -296,7 +285,7 @@ FuncReturnType MoveShape(Map& Buffer) {
 
 FuncReturnType Start(Map& Buffer) {
 	std::mutex m;
-	Console.Create("Log"); 
+	Console.Create("Log");
 	Map Front_Buffer;
 	Map Back_Buffer;
 
@@ -305,7 +294,7 @@ FuncReturnType Start(Map& Buffer) {
 	FuncReturnType result = FuncReturnType::eNULL;
 
 	Back_Buffer = Buffer;
-	std::thread Thrd_UserInput( 
+	std::thread Thrd_UserInput(
 		thrd_InputDirectionFromUser, std::ref(Back_Buffer), std::ref(Front_Buffer), std::ref(m)
 	);
 	Thrd_UserInput.detach();
@@ -423,6 +412,3 @@ Map::Map() {
 	this->MapX = -1;
 	this->MapY = -1;
 }
-
-
-
