@@ -47,7 +47,7 @@ enum class BlockType {
 
 enum class FuncReturnType
 {
-	BLOCKED_BY_GROUND_OR_INACTIVEBLOCK,
+	BLOCKED_BY_GROUND_OR_INACTIVEBLOCK_OR_WALL,
 	BLOCKED_BY_ENDLINE,
 	BLOCKED_BY_WALL,
 	CONTINUE,
@@ -94,8 +94,8 @@ public:
 	}
 
 	Block& operator=(Block rvalue) {
-		Log("sisisisi", "\ntype :", rvalue.blocktype, "\ncolor :", rvalue.Color, "\nx :", rvalue.x, "\ny :", rvalue.y);
-		Log("sisi", "Weight->x :", rvalue.Weight->x, "\nWeight->y :", rvalue.Weight->y);
+		//Log("sisisisi", "\ntype :", rvalue.blocktype, "\ncolor :", rvalue.Color, "\nx :", rvalue.x, "\ny :", rvalue.y);
+		//Log("sisi", "Weight->x :", rvalue.Weight->x, "\nWeight->y :", rvalue.Weight->y);
 		this->blocktype = rvalue.blocktype;
 		this->Color = rvalue.Color;
 		this->Weight->x = rvalue.Weight->x;
@@ -198,13 +198,14 @@ public:
 	Map();
 };
 
-void Renderer(Block Buffer, int x, int y);
+
+void Renderer(Block& Buffer);
 void ShowBlockData(Block block);
 FuncReturnType Start(Map& Buffer);
 void PrintMapXY(Map map);
-void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, std::mutex& m);
+void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, int& RotationMax, std::mutex& m);
 Shape* CreateShape();
-FuncReturnType MoveShape(Map& Buffer);
+FuncReturnType MoveShape(Map& Buffer, bool DisplayUpdate);
 FuncReturnType CheckCrash(Map& Buffer, int ShapeX, int ShapeY, Block* block);
 void SetWeight(Block** block, int RotaionIndex, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
-void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer, int MapX, int MapY);
+void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer);
