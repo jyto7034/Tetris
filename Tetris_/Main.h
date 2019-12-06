@@ -36,12 +36,18 @@ void Log(const char* types, ...);
 void gotoxy(int x, int y);
 POINT getXY();
 
+enum class RenderType {
+	CALL_BY_THREAD,
+	CALL_BY_MAIN,
+	_NULL
+};
+
 enum class BlockType {
 	INACTBLOCK,
 	GROUND,
 	BLOCK,
 	BLANK,
-	eNULL,
+	_NULL,
 	WALL
 };
 
@@ -72,7 +78,7 @@ public:
 	int Color, x, y;
 	BlockType blocktype;
 	st_Weight Weight[4];
-	Block() : Color(-1), x(-1), y(-1), blocktype(BlockType::eNULL) {
+	Block() : Color(-1), x(-1), y(-1), blocktype(BlockType::_NULL) {
 		Weight[0] = { WEIGHT_NULL, WEIGHT_NULL };
 		Weight[1] = { WEIGHT_NULL, WEIGHT_NULL };
 		Weight[2] = { WEIGHT_NULL, WEIGHT_NULL };
@@ -190,7 +196,7 @@ public:
 		this->ActiveShape = _shape;
 	}
 
-	void AddInActiveShape(Shape* _shape) {
+	void AddInActiveShape(Shape* _shape) { 
 		this->InActiveShapes.push_back(_shape);
 	}
 
@@ -198,14 +204,18 @@ public:
 	Map();
 };
 
+void SetWeight(Block**, int, int, int, int, int, int, int, int, int);
+void Thrd_Render(Map&, Map&, FuncReturnType&);
+void CheckBufferAndRender(Map&, Map&);
+void CheckBingoAndHoldDown(Map&);
+void ShowBlockData(Block);
+void DeleteLine(Map&, int);
+void PrintMapXY(Map);
+void Renderer(Block&);
+void ConsoleInitialize();
 
-void Renderer(Block& Buffer);
-void ShowBlockData(Block block);
-FuncReturnType Start(Map& Buffer);
-void PrintMapXY(Map map);
-void thrd_InputDirectionFromUser(Map& Back_Buffer, Map& Front_Buffer, int& RotationMax, std::mutex& m);
 Shape* CreateShape();
-FuncReturnType MoveShape(Map& Buffer, bool DisplayUpdate);
-FuncReturnType CheckCrash(Map& Buffer, int ShapeX, int ShapeY, Block* block);
-void SetWeight(Block** block, int RotaionIndex, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
-void CheckBufferAndRender(Map& Back_Buffer, Map& Front_Buffer);
+
+FuncReturnType CheckCrash(Map&, Block*);
+FuncReturnType MoveShape(Map&, bool);
+FuncReturnType Start(Map&);

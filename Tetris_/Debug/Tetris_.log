@@ -1,10 +1,12 @@
 ﻿  Definition.cpp
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Main.h(127,3): warning C4002: 함수 같은 매크로 호출 'assert'에 대해 인수가 너무 많습니다.
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(42,16): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(42,18): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(89,1): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Main.h(133,3): warning C4002: 함수 같은 매크로 호출 'assert'에 대해 인수가 너무 많습니다.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(16,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(55,16): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(55,18): warning C4838: 'int'에서 'SHORT'(으)로의 변환에는 축소 변환이 필요합니다.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(316,1): warning C4996: 'kbhit': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _kbhit. See online help for details.
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\conio.h(459): message : 'kbhit' 선언을 참조하십시오.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(320,1): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\conio.h(453): message : 'getch' 선언을 참조하십시오.
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(92,1): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
+C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(323,1): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\conio.h(453): message : 'getch' 선언을 참조하십시오.
-C:\Users\BlasterDinray\source\repos\Tetris_\Tetris_\Definition.cpp(358,12): warning C4244: '인수': 'time_t'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   Tetris_.vcxproj -> C:\Users\BlasterDinray\source\repos\Tetris_\Debug\Tetris_.exe
