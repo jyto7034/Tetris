@@ -57,6 +57,7 @@ enum class FuncReturnType
 	BLOCKED_BY_ENDLINE,
 	BLOCKED_BY_WALL,
 	CONTINUE,
+	eERROR,
 	eNULL
 };
 
@@ -128,13 +129,16 @@ public:
 	ShapeType mShapeType;
 	int BlockCnt;
 	int x, y;
-	Shape() : ElementBlocks(NULL), mShapeType(ShapeType::eNULL), BlockCnt(-1), x(-1), y(-1) {}
+	bool Displayed;
+	Shape() : ElementBlocks(NULL), mShapeType(ShapeType::eNULL), BlockCnt(-1), x(-1), y(-1), Displayed(FALSE) {}
 	Shape(Block** Blocks, ShapeType _mShapeType) {
 		assert(*Blocks != NULL, "Blocks is NULL");
 		BlockCnt = 4;
 		ElementBlocks = Blocks;
 		x = y = 0;
 		mShapeType = ShapeType::eNULL;
+
+		Displayed = FALSE;
 	}
 
 	Block& operator[](int index) {
@@ -208,14 +212,16 @@ void SetWeight(Block**, int, int, int, int, int, int, int, int, int);
 void Thrd_Render(Map&, Map&, FuncReturnType&);
 void CheckBufferAndRender(Map&, Map&);
 void CheckBingoAndHoldDown(Map&);
+void ShowEnumType(FuncReturnType type);
 void ShowBlockData(Block);
 void DeleteLine(Map&, int);
-void PrintMapXY(Map);
-void Renderer(Block&);
 void ConsoleInitialize();
+void Renderer(Block&);
+void PrintMapXY(Map);
+void CreateAndShowNextBlock();
 
 Shape* CreateShape();
 
 FuncReturnType CheckCrash(Map&, Block*);
-FuncReturnType MoveShape(Map&, bool);
+FuncReturnType MoveShape(Map&, bool, bool);
 FuncReturnType Start(Map&);
